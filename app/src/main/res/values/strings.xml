@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name" translatable="false">KakaoBot</string>
+    <string name="action_settings">Settings</string>
+    <string name="no_read_permission">Read storage permission is necessary.</string>
+</resources>
