@@ -10,45 +10,64 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.text.Html;
 import android.text.SpannableString;
+import android.util.Log;
 
 import com.suyong.kakaobot.script.JSScriptEngine;
 import com.suyong.kakaobot.script.PythonScriptEngine;
+
+import org.python.core.PyBoolean;
+import org.python.core.PyObject;
+import org.python.core.PyString;
 
 import java.util.ArrayList;
 
 public class KakaoTalkListener extends NotificationListenerService {
     private static final String KAKAOTALK_PACKAGE = "com.kakao.talk";
-    private static ArrayList<Notification.Action> sessions = new ArrayList<>();
-    private static JSScriptEngine jsEngine;
-    private static PythonScriptEngine pythonEngine;
+    private static ArrayList<Session> sessions = new ArrayList<>();
+    private static ArrayList<JSScriptEngine> jsEngines = new ArrayList<>();
+    private static ArrayList<PythonScriptEngine> pythonEngines = new ArrayList<>();
     private static Context context;
 
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) { // @author ManDongI
         super.onNotificationPosted(statusBarNotification);
 
+        Log.d("KakaoBot/Listener", "name: " + statusBarNotification.getPackageName());
+
         if(statusBarNotification.getPackageName().equals(KAKAOTALK_PACKAGE)) {
             Notification.WearableExtender extender = new Notification.WearableExtender(statusBarNotification.getNotification());
+
+            Log.d("KakaoBot/Listener", "Kakao!");
+
             for(Notification.Action act : extender.getActions()) {
                 if(act.getRemoteInputs() != null && act.getRemoteInputs().length > 0) {
-                    if(act.title.toString().toLowerCase().contains("reply") || act.title.toString().toLowerCase().contains("Reply") || act.title.toString().toLowerCase().contains("답장")) {
-                        String title = statusBarNotification.getNotification().extras.getString("android.title");
-                        Object index = statusBarNotification.getNotification().extras.get("android.text");
+                    String title = statusBarNotification.getNotification().extras.getString("android.title");
+                    Object index = statusBarNotification.getNotification().extras.get("android.text");
 
-                        context = getApplicationContext();
+                    Type.Message message = parsingMessage(title, index);
 
-                        sessions.add(act);
+                    context = getApplicationContext();
 
-                        if(jsEngine == null) {
-                            jsEngine = new JSScriptEngine();
-                        }
-                        if(pythonEngine == null) {
-                            pythonEngine = new PythonScriptEngine();
-                        }
+                    Session session = new Session();
+                    session.session = act;
+                    session.message = message.message;
+                    session.sender = message.sender;
+                    session.room = message.room;
 
-                        Type.Message message = parsingMessage(title, index);
-                        jsEngine.invokeFunction("", new Object[]{ message.room, message.sender, message.message, message.room == message.sender });
-                        pythonEngine.invokeFunction("", new Object[]{ message.room, message.sender, message.message, message.room == message.sender });
+                    sessions.add(session);
+
+                    for(JSScriptEngine engine : jsEngines) {
+                        engine.invokeFunction("talkReceivedHook", new Object[]{message.room, message.sender, message.message, !message.room.equals(message.sender)});
+                        Log.d("KakaoBot/Listener", "JS Received! " + message.message);
+                    }
+                    for(PythonScriptEngine engine : pythonEngines) {
+                        engine.invokeFunction("talkReceivedHook", new PyObject[]{
+                                new PyString(message.room),
+                                new PyString(message.sender),
+                                new PyString(message.message),
+                                new PyBoolean(!message.room.equals(message.sender))
+                        });
+                        Log.d("KakaoBot/Listener", "Python Received! " + message.message);
                     }
                 }
             }
@@ -58,9 +77,9 @@ public class KakaoTalkListener extends NotificationListenerService {
     public static void send(String room, String message) throws IllegalArgumentException { // @author ManDongI
         Notification.Action session = null;
 
-        for(Notification.Action i : sessions) {
-            if(i.title == room) {
-                session = i;
+        for(Session i : sessions) {
+            if(i.room.equals(room)) {
+                session = i.session;
 
                 break;
             }
@@ -78,7 +97,7 @@ public class KakaoTalkListener extends NotificationListenerService {
         try {
             session.actionIntent.send(context, 0, sendIntent);
         } catch (PendingIntent.CanceledException e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -96,5 +115,23 @@ public class KakaoTalkListener extends NotificationListenerService {
         }
 
         return result;
+    }
+
+    public static void addJsEngine(JSScriptEngine engine) {
+        engine.execute();
+
+        jsEngines.add(engine);
+    }
+    public static void addPythonEngine(PythonScriptEngine engine) {
+        engine.execute();
+
+        pythonEngines.add(engine);
+    }
+
+    private class Session {
+        public Notification.Action session;
+        public String room;
+        public String sender;
+        public String message;
     }
 }

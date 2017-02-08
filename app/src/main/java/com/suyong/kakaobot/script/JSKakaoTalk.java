@@ -13,7 +13,7 @@ public class JSKakaoTalk extends ScriptableObject {
     }
 
     @JSStaticFunction
-    public void send(String room, String message) {
+    public static void send(String room, String message) {
         KakaoTalkListener.send(room, message);
     }
 }

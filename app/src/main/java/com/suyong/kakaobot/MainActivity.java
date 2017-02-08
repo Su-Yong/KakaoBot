@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.suyong.kakaobot.script.JSScriptEngine;
+import com.suyong.kakaobot.script.PythonScriptEngine;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,12 +35,13 @@ import java.util.ArrayList;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.M;
+import static com.suyong.kakaobot.FileManager.getProjectList;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_READ = 0;
     private static final int PERMISSION_WRITE = 1;
     private static final int PERMISSION_INTERNET = 2;
-    private static final String PROJECT_DIRECTORY = "kakaobot";
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener((view) -> {
 
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -64,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         initRecyclerView();
+        initEngines();
     }
 
     private void initRecyclerView() {
@@ -80,52 +86,45 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private ArrayList<Type.Project> getProjectList() {
-        ArrayList<Type.Project> result = new ArrayList<>();
-        File projectDirectory = new File(Environment.getExternalStorageDirectory(), PROJECT_DIRECTORY);
-
-        for(File file : projectDirectory.listFiles()) {
-            File data = new File(file, "data.txt");
-            try {
-                BufferedReader stream = new BufferedReader(new FileReader(data));
-
-                Type.Project project = new Type.Project();
-                String line;
-                while((line = stream.readLine()) != null) {
-                    if(line.contains("type")) {
-                        String s = line.split(":")[1];
-                        if (s.toLowerCase().equals("js")) {
-                            project.icon = Type.IconType.JS;
-                        } else if (s.toLowerCase().equals("python")) {
-                            project.icon = Type.IconType.PYTHON;
+    private void initEngines() {
+        ArrayList<Type.Project> list = getProjectList();
+        for(Type.Project project : list) {
+            if(!project.disabled) {
+                switch (project.icon) {
+                    case JS:
+                        JSScriptEngine jsScriptEngine = new JSScriptEngine();
+                        try {
+                            jsScriptEngine.setScriptSource(FileManager.getScriptIndex(Type.IconType.JS, project.title));
+                            KakaoTalkListener.addJsEngine(jsScriptEngine);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                            Snackbar.make(fab, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Snackbar.make(fab, getString(R.string.unknown_error), Snackbar.LENGTH_SHORT).show();
                         }
-                    } else if(line.contains("subtitle")) {
-                        project.subtitle = line.split(":")[1];
-                    } else if(line.contains("title")) {
-                        project.title = line.split(":")[1];
-                    } else if(line.contains("disabled")) {
-                        String s = line.split(":")[1];
-                        if (s.toLowerCase().equals("true")) {
-                            project.disabled = true;
-                        } else if (s.toLowerCase().equals("false")) {
-                            project.disabled = false;
+                        break;
+                    case PYTHON:
+                        PythonScriptEngine pythonScriptEngine = new PythonScriptEngine();
+                        try {
+                            pythonScriptEngine.setScriptSource(FileManager.getScriptIndex(Type.IconType.PYTHON, project.title));
+                            KakaoTalkListener.addPythonEngine(pythonScriptEngine);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                            Snackbar.make(fab, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Snackbar.make(fab, getString(R.string.unknown_error), Snackbar.LENGTH_SHORT).show();
                         }
-                    }
+                        break;
                 }
 
-                Log.d("check", project.title + " " + project.subtitle);
-
-                result.add(project);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                Log.d("KakaoBot/initEngine", project.title + ": Load succeed");
             }
         }
-
-        return result;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch(requestCode) {

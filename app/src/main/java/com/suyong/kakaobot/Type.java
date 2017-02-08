@@ -12,10 +12,21 @@ public class Type {
         public String title;
         public String subtitle;
         public boolean disabled;
+        public String path;
     }
 
     public enum IconType {
-        JS,
-        PYTHON,
+        JS("js"),
+        PYTHON("py");
+
+        private String type;
+        IconType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }
     }
 }

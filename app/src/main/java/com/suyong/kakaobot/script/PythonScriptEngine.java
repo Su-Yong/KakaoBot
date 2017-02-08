@@ -6,7 +6,7 @@ import org.python.util.PythonInterpreter;
 
 import py4j.GatewayServer;
 
-public class PythonScriptEngine implements ScriptEngine {
+public class PythonScriptEngine {
     private String script;
     private PythonInterpreter interpreter;
 
@@ -14,29 +14,25 @@ public class PythonScriptEngine implements ScriptEngine {
         interpreter = new PythonInterpreter();
     }
 
-    @Override
-    public boolean execute() {
+    public void execute() {
         try {
             PythonKakaoTalk kakaoTalk = new PythonKakaoTalk();
             GatewayServer server = new GatewayServer(kakaoTalk);
             server.start();
 
             interpreter.exec(this.script);
+        } catch (Exception e) {
+            e.printStackTrace();
 
-            return true;
-        } catch (Exception err) {
-            return false;
         }
     }
 
-    @Override
     public void setScriptSource(String source) {
         this.script = source;
     }
 
-    @Override
-    public void invokeFunction(String name, Object[] parameter) {
+    public void invokeFunction(String name, PyObject[] parameter) {
         PyObject func = interpreter.get(name);
-        func.__call__((PyObject[]) parameter);
+        func.__call__(parameter);
     }
 }

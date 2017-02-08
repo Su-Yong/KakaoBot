@@ -1,5 +1,7 @@
 package com.suyong.kakaobot.script;
 
+import android.util.Log;
+
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Script;
@@ -7,7 +9,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class JSScriptEngine implements ScriptEngine {
+public class JSScriptEngine {
     private static String script;
     private static Context jsContext;
     private static ScriptableObject scope;
@@ -21,8 +23,7 @@ public class JSScriptEngine implements ScriptEngine {
         return this.jsContext;
     }
 
-    @Override
-    public boolean execute() {
+    public void execute() {
         try {
             Script script_real = jsContext.compileString(script, "", 0, null);
             scope = jsContext.initStandardObjects();
@@ -30,20 +31,19 @@ public class JSScriptEngine implements ScriptEngine {
             ScriptableObject.defineClass(scope, JSKakaoTalk.class);
             script_real.exec(jsContext, scope);
 
-            return true;
-        } catch(Exception e) {
-            return false;
+            Log.d("KakaoBot/JSEngine", "Execute succeed");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
     public void setScriptSource(String source) {
         this.script = source;
     }
 
-    @Override
     public void invokeFunction(String name, Object[] parameter) {
         Function func = (Function) scope.get(name, scope);
         func.call(jsContext, scope, scope, parameter);
+        Log.d("KakaoBot/JSEngine", "invoke function: " + name);
     }
 }

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name" translatable="false">KakaoBot</string>
+    <string name="app_name">KakaoBot</string>
     <string name="action_settings">Settings</string>
-    <string name="no_read_permission">Read storage permission is necessary.</string>
+    <string name="no_read_permission">It must have read storage permission</string>
+    <string name="file_not_found">Couldn\'t find your project</string>
+    <string name="unknown_error">Unknown Error!</string>
 </resources>
