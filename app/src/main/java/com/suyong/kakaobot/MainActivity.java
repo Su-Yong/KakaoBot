@@ -2,6 +2,7 @@ package com.suyong.kakaobot;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.suyong.kakaobot.script.JSScriptEngine;
@@ -41,7 +43,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_READ = 0;
     private static final int PERMISSION_WRITE = 1;
     private static final int PERMISSION_INTERNET = 2;
-    private FloatingActionButton fab;
+    private static Context context;
+
+    private LinearLayout fabContainer;
+    private FloatingActionButton fabAdd;
+    private FloatingActionButton fabReload;
+
+    private ArrayList<Type.Project> projectList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +58,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener((view) -> {
+        context = this;
 
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+        fabContainer = (LinearLayout) findViewById(R.id.fab_container);
+
+        fabAdd = (FloatingActionButton) findViewById(R.id.fab_add);
+        fabAdd.setOnClickListener((view) -> {
+            Snackbar.make(fabContainer, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
         });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -68,14 +79,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        initRecyclerView();
+        fabReload = (FloatingActionButton) findViewById(R.id.fab_reload);
+        fabReload.setOnClickListener((view) -> {
+            Snackbar.make(fabContainer, getString(R.string.reloaded), Snackbar.LENGTH_LONG).setAction("Action", null).show();
+        });
+
         initEngines();
+        initRecyclerView();
     }
 
     private void initRecyclerView() {
-        ArrayList<Type.Project> list = getProjectList();
-
-        ScriptProjectAdapter adapter = new ScriptProjectAdapter(list);
+        ScriptProjectAdapter adapter = new ScriptProjectAdapter(projectList);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.project_list);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -87,8 +101,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initEngines() {
-        ArrayList<Type.Project> list = getProjectList();
-        for(Type.Project project : list) {
+        projectList = getProjectList();
+        KakaoTalkListener.clearEngine();
+
+        int i = 0;
+        for(Type.Project project : projectList) {
             if(!project.disabled) {
                 switch (project.icon) {
                     case JS:
@@ -98,10 +115,9 @@ public class MainActivity extends AppCompatActivity {
                             KakaoTalkListener.addJsEngine(jsScriptEngine);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
-                            Snackbar.make(fab, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(fabContainer, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            Snackbar.make(fab, getString(R.string.unknown_error), Snackbar.LENGTH_SHORT).show();
+                            projectList.get(i).isError = e.toString();
                         }
                         break;
                     case PYTHON:
@@ -111,16 +127,17 @@ public class MainActivity extends AppCompatActivity {
                             KakaoTalkListener.addPythonEngine(pythonScriptEngine);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
-                            Snackbar.make(fab, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(fabContainer, getString(R.string.file_not_found), Snackbar.LENGTH_SHORT).show();
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            Snackbar.make(fab, getString(R.string.unknown_error), Snackbar.LENGTH_SHORT).show();
+                            projectList.get(i).isError = e.toString();
                         }
                         break;
                 }
 
                 Log.d("KakaoBot/initEngine", project.title + ": Load succeed");
             }
+
+            i++;
         }
     }
 
@@ -151,5 +168,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    public static int dp(float dips) {
+        return (int) (dips * context.getResources().getDisplayMetrics().density + 0.5f);
     }
 }

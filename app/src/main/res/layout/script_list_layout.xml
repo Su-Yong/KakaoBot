@@ -44,8 +44,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:focusable="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:focusableInTouchMode="true"
                 android:text="subtitle" />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/is_error"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_warning_red_24dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <ImageButton
             android:id="@+id/setting"

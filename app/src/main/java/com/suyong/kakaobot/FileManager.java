@@ -88,6 +88,7 @@ public class FileManager {
             String line;
             while((line = stream.readLine()) != null) {
                 builder.append(line);
+                builder.append("\n");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

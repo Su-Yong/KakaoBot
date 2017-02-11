@@ -11,6 +11,7 @@ public class Type {
         public IconType icon;
         public String title;
         public String subtitle;
+        public String isError = null;
         public boolean disabled;
         public String path;
     }

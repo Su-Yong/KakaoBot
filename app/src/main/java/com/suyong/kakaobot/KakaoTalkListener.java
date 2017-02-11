@@ -8,9 +8,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.support.design.widget.Snackbar;
 import android.text.Html;
 import android.text.SpannableString;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.suyong.kakaobot.script.JSScriptEngine;
 import com.suyong.kakaobot.script.PythonScriptEngine;
@@ -117,15 +119,20 @@ public class KakaoTalkListener extends NotificationListenerService {
         return result;
     }
 
-    public static void addJsEngine(JSScriptEngine engine) {
+    public static void addJsEngine(JSScriptEngine engine) throws Exception {
         engine.execute();
 
         jsEngines.add(engine);
     }
-    public static void addPythonEngine(PythonScriptEngine engine) {
+    public static void addPythonEngine(PythonScriptEngine engine) throws Exception {
         engine.execute();
 
         pythonEngines.add(engine);
+    }
+
+    public static void clearEngine() {
+        jsEngines.clear();
+        pythonEngines.clear();
     }
 
     private class Session {

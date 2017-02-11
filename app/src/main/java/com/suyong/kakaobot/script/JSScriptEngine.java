@@ -23,7 +23,7 @@ public class JSScriptEngine {
         return this.jsContext;
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         try {
             Script script_real = jsContext.compileString(script, "", 0, null);
             scope = jsContext.initStandardObjects();
@@ -33,7 +33,7 @@ public class JSScriptEngine {
 
             Log.d("KakaoBot/JSEngine", "Execute succeed");
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new Exception("[-ScriptSplitTag-]" + e.toString());
         }
     }
 

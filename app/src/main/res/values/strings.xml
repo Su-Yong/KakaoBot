@@ -4,4 +4,5 @@
     <string name="no_read_permission">It must have read storage permission</string>
     <string name="file_not_found">Couldn\'t find your project</string>
     <string name="unknown_error">Unknown Error!</string>
+    <string name="reloaded">Script has been reloaded.</string>
 </resources>
