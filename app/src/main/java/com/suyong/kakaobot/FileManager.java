@@ -4,10 +4,14 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 
@@ -99,4 +103,32 @@ public class FileManager {
         return builder.toString();
     }
 
+    public static void createProject(String title, String subtitle, Type.IconType type) throws IOException {
+        File projectDirectory = new File(Environment.getExternalStorageDirectory(), PROJECT_DIRECTORY);
+        File directory = new File(projectDirectory, title);
+        File dataFile = new File(directory, "data.txt");
+        File scriptFile = new File(directory, "main." + type.toString());
+
+        directory.mkdirs();
+        dataFile.createNewFile();
+        scriptFile.createNewFile();
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile));
+
+        writer.write("type:" + type.toString()); writer.newLine();
+        writer.write("title:" + title); writer.newLine();
+        writer.write("subtitle:" + subtitle); writer.newLine();
+        writer.write("disabled:false"); writer.newLine();
+
+        writer.close();
+        writer = new BufferedWriter(new FileWriter(scriptFile));
+
+        writer.write("function talkReceivedHook(room, message, sender, isGroup) {"); writer.newLine();
+        writer.write("  if(message == \"Hello\") {"); writer.newLine();
+        writer.write("    KakaoTalk.send(room, \"Hello, \" + sender + \"!\");"); writer.newLine();
+        writer.write("  }"); writer.newLine();
+        writer.write("}");
+
+        writer.close();
+    }
 }

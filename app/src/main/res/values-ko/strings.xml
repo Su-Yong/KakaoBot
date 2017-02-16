@@ -6,4 +6,11 @@
     <string name="file_not_found">프로젝트를 찾을 수 없습니다.</string>
     <string name="unknown_error">알 수 없는 에러가 일어났습니다.</string>
     <string name="reloaded">스크립트가 리로드 되었습니다.</string>
+    <string name="create_project">새 카카오 봇 생성</string>
+    <string name="project_name">프로젝트 이름</string>
+    <string name="ok">확인</string>
+    <string name="project_subtitle">프로젝트 설명</string>
+    <string name="cancel">취소</string>
+    <string name="create_failed">프로젝트 생성에 실패하였습니다.</string>
+    <string name="create_succeed">프로젝트 생성 완료</string>
 </resources>

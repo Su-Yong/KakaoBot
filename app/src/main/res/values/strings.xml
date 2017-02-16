@@ -5,4 +5,11 @@
     <string name="file_not_found">Couldn\'t find your project</string>
     <string name="unknown_error">Unknown Error!</string>
     <string name="reloaded">Script has been reloaded.</string>
+    <string name="create_project">Create new KakaoBot</string>
+    <string name="project_name">Project name</string>
+    <string name="ok">Ok</string>
+    <string name="project_subtitle">Project subtitle</string>
+    <string name="cancel">Cancel</string>
+    <string name="create_failed">Failed to create project</string>
+    <string name="create_succeed">Project create completed</string>
 </resources>

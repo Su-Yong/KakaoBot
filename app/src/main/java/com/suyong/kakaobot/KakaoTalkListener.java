@@ -16,10 +16,10 @@ import android.widget.Toast;
 
 import com.suyong.kakaobot.script.JSScriptEngine;
 import com.suyong.kakaobot.script.PythonScriptEngine;
-
+/*
 import org.python.core.PyBoolean;
 import org.python.core.PyObject;
-import org.python.core.PyString;
+import org.python.core.PyString;*/
 
 import java.util.ArrayList;
 
@@ -63,12 +63,12 @@ public class KakaoTalkListener extends NotificationListenerService {
                         Log.d("KakaoBot/Listener", "JS Received! " + message.message);
                     }
                     for(PythonScriptEngine engine : pythonEngines) {
-                        engine.invokeFunction("talkReceivedHook", new PyObject[]{
+                        /*engine.invokeFunction("talkReceivedHook", new PyObject[]{
                                 new PyString(message.room),
                                 new PyString(message.sender),
                                 new PyString(message.message),
                                 new PyBoolean(!message.room.equals(message.sender))
-                        });
+                        });*/
                         Log.d("KakaoBot/Listener", "Python Received! " + message.message);
                     }
                 }
@@ -125,7 +125,7 @@ public class KakaoTalkListener extends NotificationListenerService {
         jsEngines.add(engine);
     }
     public static void addPythonEngine(PythonScriptEngine engine) throws Exception {
-        engine.execute();
+        //engine.execute();
 
         pythonEngines.add(engine);
     }

@@ -32,6 +32,8 @@
         android:padding="@dimen/fab_margin"
         android:orientation="vertical"
         android:gravity="center"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="bottom|right">
 

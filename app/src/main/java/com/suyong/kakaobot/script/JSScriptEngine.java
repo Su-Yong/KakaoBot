@@ -33,7 +33,7 @@ public class JSScriptEngine {
 
             Log.d("KakaoBot/JSEngine", "Execute succeed");
         } catch (Exception e) {
-            throw new Exception("[-ScriptSplitTag-]" + e.toString());
+            throw new Exception("SCRIPTSPLITTAG" + e.toString());
         }
     }
 

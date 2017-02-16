@@ -61,7 +61,7 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
                     CardView card = new CardView(holder.itemView.getContext());
                     TextView text = new TextView(holder.itemView.getContext());
 
-                    text.setText(project.isError);
+                    text.setText(project.isError.split("SCRIPTSPLITTAG")[1]);
                     card.setClickable(true);
                     card.setOnClickListener(view1 -> {
                         holder.popup.dismiss();
@@ -92,6 +92,11 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    public void setList(ArrayList<Type.Project> list) {
+        this.list = list;
+        notifyDataSetChanged();
     }
 
     private void disableAll(ViewGroup group) {
