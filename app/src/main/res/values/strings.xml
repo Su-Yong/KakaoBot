@@ -10,6 +10,8 @@
     <string name="ok">Ok</string>
     <string name="project_subtitle">Project subtitle</string>
     <string name="cancel">Cancel</string>
-    <string name="create_failed">Failed to create project</string>
+    <string name="create_failed">Failed to create KakaoBot</string>
     <string name="create_succeed">Project create completed</string>
+    <string name="project_enable">Project enable</string>
+    <string name="delete_check">Are you sure?</string>
 </resources>

@@ -11,6 +11,8 @@
     <string name="ok">확인</string>
     <string name="project_subtitle">프로젝트 설명</string>
     <string name="cancel">취소</string>
-    <string name="create_failed">프로젝트 생성에 실패하였습니다.</string>
+    <string name="create_failed">새 카카오 봇을 만들지 못 하였습니다.</string>
     <string name="create_succeed">프로젝트 생성 완료</string>
+    <string name="project_enable">프로젝트 활성화</string>
+    <string name="delete_check">정말로 삭제 하시겠습니까?</string>
 </resources>

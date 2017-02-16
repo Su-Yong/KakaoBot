@@ -131,4 +131,90 @@ public class FileManager {
 
         writer.close();
     }
+
+    public static void changeData(String project, String key, String value) throws Exception {
+        File projectDirectory = new File(Environment.getExternalStorageDirectory(), PROJECT_DIRECTORY);
+
+        for(File file : projectDirectory.listFiles()) {
+            File data = new File(file, "data.txt");
+
+            BufferedReader stream = new BufferedReader(new FileReader(data));
+
+            String line;
+            int i = 0;
+            String[] str = new String[4];
+            boolean check = false;
+            while((line = stream.readLine()) != null) {
+                if(!line.split(":")[0].equals(key)) {
+                    str[i] = line;
+                } else {
+                    str[i] = "check";
+                }
+
+                if(line.contains("title") && line.split(":")[1].equals(project)) {
+                    check = true;
+                }
+
+                i++;
+                Log.d("KakaoBot/FileManager", line.split(":")[1]);
+            }
+            stream.close();
+
+            if(check) {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(data));
+                for(String l : str) {
+                    if(l.equals("check")) {
+                        writer.write(key + ":" + value);
+                    } else {
+                        writer.write(l);
+                    }
+                    writer.newLine();
+
+                    Log.d("KakaoBot/FileManager", l);
+                }
+
+                writer.close();
+                return;
+            }
+        }
+
+        throw new Exception("Can't find project");
+    }
+
+    public static void delete(String project) throws Exception {
+        File projectDirectory = new File(Environment.getExternalStorageDirectory(), PROJECT_DIRECTORY);
+
+        for(File file : projectDirectory.listFiles()) {
+            File data = new File(file, "data.txt");
+
+            BufferedReader stream = new BufferedReader(new FileReader(data));
+
+            String line;
+            boolean check = false;
+            while((line = stream.readLine()) != null) {
+                if(line.contains("title") && line.split(":")[1].equals(project)) {
+                    check = true;
+                }
+            }
+            stream.close();
+
+            if(check) {
+                deleteFile(file.getParentFile());
+
+                return;
+            }
+        }
+
+        throw new Exception("Can't find project");
+    }
+
+    private static void deleteFile(File file) {
+        if(file.isDirectory()) {
+            for(File f : file.listFiles()) {
+                deleteFile(f);
+            }
+        } else {
+            file.delete();
+        }
+    }
 }

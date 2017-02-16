@@ -75,20 +75,26 @@ public class MainActivity extends AppCompatActivity {
         fabContainer = (LinearLayout) findViewById(R.id.fab_container);
 
         fabAdd = (FloatingActionButton) findViewById(R.id.fab_add);
-        fabAdd.setOnClickListener((view) -> {
-            showProjectDialog();
+        fabAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showProjectDialog();
+            }
         });
 
         fabReload = (FloatingActionButton) findViewById(R.id.fab_reload);
-        fabReload.setOnClickListener((view) -> {
-            initEngines();
-            try {
-                RecyclerView recyclerView = (RecyclerView) findViewById(R.id.project_list);
-                ScriptProjectAdapter adapter = (ScriptProjectAdapter) recyclerView.getAdapter();
-                adapter.setList(projectList);
-                Snackbar.make(fabContainer, getString(R.string.reloaded), Snackbar.LENGTH_LONG).show();
-            } catch(NullPointerException e) {
-                initRecyclerView();
+        fabReload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initEngines();
+                try {
+                    RecyclerView recyclerView = (RecyclerView) findViewById(R.id.project_list);
+                    ScriptProjectAdapter adapter = (ScriptProjectAdapter) recyclerView.getAdapter();
+                    adapter.setList(projectList);
+                    Snackbar.make(fabContainer, getString(R.string.reloaded), Snackbar.LENGTH_LONG).show();
+                } catch(NullPointerException e) {
+                    initRecyclerView();
+                }
             }
         });
 
@@ -105,8 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            initEngines();
-            initRecyclerView();
+            reload();
         } catch(Exception e) {}
     }
 
@@ -121,8 +126,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void reload() {
+        initEngines();
+        initRecyclerView();
+    }
+
     private void initRecyclerView() {
-        ScriptProjectAdapter adapter = new ScriptProjectAdapter(projectList);
+        ScriptProjectAdapter adapter = new ScriptProjectAdapter(projectList, this);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.project_list);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -181,34 +191,41 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.script_create_dialog, null, false);
 
-        TextInputEditText titleEdit = (TextInputEditText) layout.findViewById(R.id.title_text);
-        TextInputEditText subtitleEdit = (TextInputEditText) layout.findViewById(R.id.subtitle_text);
-        RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.type_group);
+        final TextInputEditText titleEdit = (TextInputEditText) layout.findViewById(R.id.title_text);
+        final TextInputEditText subtitleEdit = (TextInputEditText) layout.findViewById(R.id.subtitle_text);
+        final RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.type_group);
 
         dialog.setView(layout);
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, i) -> {
-            Type.IconType type = Type.IconType.JS;
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Type.IconType type = Type.IconType.JS;
 
-            switch(radioGroup.getCheckedRadioButtonId()) {
-                case R.id.type_js:
-                    type = Type.IconType.JS;
-                    break;
-                case R.id.type_python:
-                    type = Type.IconType.PYTHON;
-                    break;
-            }
-            try {
-                FileManager.createProject(titleEdit.getText().toString(), subtitleEdit.getText().toString(), type);
-                initEngines();
-                initRecyclerView();
-                Snackbar.make(fabContainer, getString(R.string.create_succeed), Snackbar.LENGTH_SHORT).show();
-            } catch(Exception e) {
-                e.printStackTrace();
-                Snackbar.make(fabContainer, getString(R.string.create_failed), Snackbar.LENGTH_SHORT).show();
+                switch(radioGroup.getCheckedRadioButtonId()) {
+                    case R.id.type_js:
+                        type = Type.IconType.JS;
+                        break;
+                    case R.id.type_python:
+                        type = Type.IconType.PYTHON;
+                        break;
+                }
+                try {
+                    FileManager.createProject(titleEdit.getText().toString(), subtitleEdit.getText().toString(), type);
+                    initEngines();
+                    initRecyclerView();
+
+                    Snackbar.make(fabContainer, getString(R.string.create_succeed), Snackbar.LENGTH_SHORT).show();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    Snackbar.make(fabContainer, getString(R.string.create_failed), Snackbar.LENGTH_SHORT).show();
+                }
             }
         });
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel), (dialogInterface, i) -> {
-            // null
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // null
+            }
         });
         dialog.show();
     }

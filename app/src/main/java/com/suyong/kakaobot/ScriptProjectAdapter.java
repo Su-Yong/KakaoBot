@@ -21,9 +21,12 @@ import java.util.ArrayList;
 
 public class ScriptProjectAdapter extends RecyclerView.Adapter {
     private ArrayList<Type.Project> list = new ArrayList<>();
+    private MainActivity activity;
 
-    public ScriptProjectAdapter(ArrayList<Type.Project> list) {
+    public ScriptProjectAdapter(ArrayList<Type.Project> list, MainActivity activity) {
         this.list = list;
+        this.activity = activity;
+
         Log.d("KakaoBot/Recycler", list.get(0).toString());
     }
 
@@ -35,9 +38,9 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder originHolder, int position) {
-        Holder holder = (Holder) originHolder;
-        Type.Project project = list.get(position);
+    public void onBindViewHolder(RecyclerView.ViewHolder originHolder, final int position) {
+        final Holder holder = (Holder) originHolder;
+        final Type.Project project = list.get(position);
 
         switch (project.icon) {
             case JS:
@@ -52,40 +55,59 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
         holder.subtitle.setText(project.subtitle);
         holder.subtitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         holder.subtitle.setSelected(true);
+        holder.setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(holder.settingPopup == null) {
+                    holder.settingPopup = new SettingPopup(list.get(position), activity);
+                }
+                holder.settingPopup.setProject(list.get(position));
+                holder.settingPopup.initListener();
+                holder.settingPopup.showAsDropDown(view);
+            }
+        });
 
         if(project.isError != null) {
             holder.warning.setVisibility(View.VISIBLE);
-            holder.warning.setOnClickListener((view) -> {
-                if(holder.popup == null) {
-                    LinearLayout layout = new LinearLayout(holder.itemView.getContext());
-                    CardView card = new CardView(holder.itemView.getContext());
-                    TextView text = new TextView(holder.itemView.getContext());
+            holder.warning.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(holder.popup == null) {
+                        LinearLayout layout = new LinearLayout(holder.itemView.getContext());
+                        CardView card = new CardView(holder.itemView.getContext());
+                        TextView text = new TextView(holder.itemView.getContext());
 
-                    text.setText(project.isError.split("SCRIPTSPLITTAG")[1]);
-                    card.setClickable(true);
-                    card.setOnClickListener(view1 -> {
+                        text.setText(project.isError.split("SCRIPTSPLITTAG")[1]);
+                        card.setClickable(true);
+                        card.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                holder.popup.dismiss();
+                            }
+                        });
+                        card.setUseCompatPadding(true);
+                        card.setContentPadding(MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8));
+                        card.setCardElevation(12.f);
+
+                        card.addView(text);
+                        layout.addView(card);
+                        holder.popup = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+                        holder.popup.setBackgroundDrawable(new BitmapDrawable());
+                        holder.popup.setOutsideTouchable(true);
+                    }
+
+                    if(!holder.popup.isShowing()) {
+                        holder.popup.showAsDropDown(view);
+                    } else {
                         holder.popup.dismiss();
-                    });
-                    card.setUseCompatPadding(true);
-                    card.setContentPadding(MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8));
-                    card.setCardElevation(12.f);
-
-                    card.addView(text);
-                    layout.addView(card);
-                    holder.popup = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-                    holder.popup.setBackgroundDrawable(new BitmapDrawable());
-                    holder.popup.setOutsideTouchable(true);
-                }
-
-                if(!holder.popup.isShowing()) {
-                    holder.popup.showAsDropDown(view);
-                } else {
-                    holder.popup.dismiss();
+                    }
                 }
             });
         }
         if(project.disabled) {
             disableAll((ViewGroup) originHolder.itemView);
+        } else {
+            enableAll((ViewGroup) originHolder.itemView);
         }
     }
 
@@ -102,9 +124,22 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
     private void disableAll(ViewGroup group) {
         for(int i = 0; i < group.getChildCount(); i++) {
             View child = group.getChildAt(i);
-            child.setEnabled(false);
+            if(child.getId() != R.id.setting) {
+                child.setEnabled(false);
+            }
             if (child instanceof ViewGroup) {
                 disableAll((ViewGroup) child);
+            }
+        }
+    }
+    private void enableAll(ViewGroup group) {
+        for(int i = 0; i < group.getChildCount(); i++) {
+            View child = group.getChildAt(i);
+            if(child.getId() != R.id.setting) {
+                child.setEnabled(true);
+            }
+            if (child instanceof ViewGroup) {
+                enableAll((ViewGroup) child);
             }
         }
     }
@@ -116,6 +151,7 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
         public ImageButton warning;
         public ImageView icon;
         public PopupWindow popup;
+        public SettingPopup settingPopup;
 
         public Holder(View itemView) {
             super(itemView);
