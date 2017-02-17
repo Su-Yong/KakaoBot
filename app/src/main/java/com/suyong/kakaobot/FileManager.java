@@ -199,7 +199,7 @@ public class FileManager {
             stream.close();
 
             if(check) {
-                deleteFile(file.getParentFile());
+                deleteFile(file);
 
                 return;
             }
@@ -209,12 +209,16 @@ public class FileManager {
     }
 
     private static void deleteFile(File file) {
-        if(file.isDirectory()) {
+        try {
             for(File f : file.listFiles()) {
-                deleteFile(f);
+                if (file.isDirectory()) {
+                    deleteFile(f);
+                } else {
+                    f.delete();
+                }
             }
-        } else {
-            file.delete();
-        }
+        } catch (NullPointerException e) {}
+
+        file.delete();
     }
 }

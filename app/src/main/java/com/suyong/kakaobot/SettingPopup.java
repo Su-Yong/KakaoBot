@@ -2,8 +2,10 @@ package com.suyong.kakaobot;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
@@ -119,14 +121,30 @@ public class SettingPopup extends PopupWindow {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    FileManager.delete(project.title);
+                AlertDialog dialog = new AlertDialog.Builder(context).create();
+                dialog.setTitle(context.getString(R.string.delete_check));
 
-                    dismiss();
-                    activity.reload();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        try {
+                            FileManager.delete(project.title);
+
+                            activity.reload();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // null
+                    }
+                });
+                dialog.show();
+
+                dismiss();
             }
         });
     }
