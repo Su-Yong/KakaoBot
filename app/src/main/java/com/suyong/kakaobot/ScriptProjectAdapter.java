@@ -26,8 +26,6 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
     public ScriptProjectAdapter(ArrayList<Type.Project> list, MainActivity activity) {
         this.list = list;
         this.activity = activity;
-
-        Log.d("KakaoBot/Recycler", list.get(0).toString());
     }
 
     @Override

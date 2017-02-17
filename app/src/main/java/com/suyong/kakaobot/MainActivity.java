@@ -4,11 +4,14 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
@@ -113,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             reload();
         } catch(Exception e) {}
+        prepare();
     }
 
     public boolean hasPermissions(String[] permissions) {
@@ -129,6 +133,28 @@ public class MainActivity extends AppCompatActivity {
     public void reload() {
         initEngines();
         initRecyclerView();
+    }
+
+    private void prepare() {
+        PackageInfo[] apps = this.getPackageManager().getInstalledPackages(0).toArray(new PackageInfo[0]);
+
+        boolean wearCheck = false;
+        for(PackageInfo info : apps) {
+            if(info.packageName.equals("com.google.android.wearable.app")) {
+                wearCheck = true;
+            }
+        }
+
+        if(!wearCheck) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.wearable.app")));
+            Toast.makeText(this, getString(R.string.need_wear_app), Toast.LENGTH_SHORT).show();
+        }
+
+        String notifiPermission = Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners");
+        if(!notifiPermission.contains("com.suyong.kakaobot")) {
+            startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+            Toast.makeText(this, getString(R.string.need_permission), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void initRecyclerView() {

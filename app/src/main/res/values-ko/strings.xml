@@ -15,4 +15,6 @@
     <string name="create_succeed">프로젝트 생성 완료</string>
     <string name="project_enable">프로젝트 활성화</string>
     <string name="delete_check">정말로 삭제 하시겠습니까?</string>
+    <string name="need_permission">알림 읽기 권한을 허용해 주세요.</string>
+    <string name="need_wear_app">안드로이드 웨어 앱을 설치해주세요.</string>
 </resources>
