@@ -1,13 +1,16 @@
 package com.suyong.kakaobot;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.text.Html;
 import android.text.SpannableString;
@@ -22,6 +25,7 @@ import org.python.core.PyObject;
 import org.python.core.PyString;*/
 
 import java.util.ArrayList;
+
 
 public class KakaoTalkListener extends NotificationListenerService {
     private static final String KAKAOTALK_PACKAGE = "com.kakao.talk";
@@ -59,14 +63,14 @@ public class KakaoTalkListener extends NotificationListenerService {
                     sessions.add(session);
 
                     for(JSScriptEngine engine : jsEngines) {
-                        engine.invokeFunction("talkReceivedHook", new Object[]{message.room, message.sender, message.message, !message.room.equals(message.sender)});
+                        engine.invokeFunction("talkReceivedHook", new Object[]{message.room, message.message, message.sender, !message.room.equals(message.sender)});
                         Log.d("KakaoBot/Listener", "JS Received! " + message.message);
                     }
                     for(PythonScriptEngine engine : pythonEngines) {
                         /*engine.invokeFunction("talkReceivedHook", new PyObject[]{
                                 new PyString(message.room),
-                                new PyString(message.sender),
                                 new PyString(message.message),
+                                new PyString(message.sender),
                                 new PyBoolean(!message.room.equals(message.sender))
                         });*/
                         Log.d("KakaoBot/Listener", "Python Received! " + message.message);
@@ -103,6 +107,10 @@ public class KakaoTalkListener extends NotificationListenerService {
         }
     }
 
+    public static ArrayList<Session> getSessions() {
+        return sessions;
+    }
+
     private Type.Message parsingMessage(String title, Object index) {
         Type.Message result = new Type.Message();
         result.room = title;
@@ -135,7 +143,7 @@ public class KakaoTalkListener extends NotificationListenerService {
         pythonEngines.clear();
     }
 
-    private class Session {
+    public class Session {
         public Notification.Action session;
         public String room;
         public String sender;
