@@ -16,4 +16,7 @@
     <string name="delete_check">Are you sure?</string>
     <string name="need_permission">Please allow read notification permissions.</string>
     <string name="need_wear_app">Please install the android wear app.</string>
+    <string name="title_activity_debuging" translatable="false">DebugingActivity</string>
+    <string name="no_space_title">It must have a title</string>
+    <string name="action_feedback">Feedback</string>
 </resources>

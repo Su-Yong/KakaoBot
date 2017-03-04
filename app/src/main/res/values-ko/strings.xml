@@ -17,4 +17,6 @@
     <string name="delete_check">정말로 삭제 하시겠습니까?</string>
     <string name="need_permission">알림 읽기 권한을 허용해 주세요.</string>
     <string name="need_wear_app">안드로이드 웨어 앱을 설치해주세요.</string>
+    <string name="no_space_title">타이틀은 무조건 있어야 합니다.</string>
+    <string name="action_feedback">문의</string>
 </resources>

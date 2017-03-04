@@ -15,13 +15,14 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 
 public class SettingPopup extends PopupWindow {
     private Type.Project project;
     private Context context;
-    private LinearLayout layout;
+    private ScrollView layout;
     private MainActivity activity;
 
     public SettingPopup(Type.Project project, MainActivity activity) {
@@ -30,7 +31,7 @@ public class SettingPopup extends PopupWindow {
         this.project = project;
 
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-        layout = (LinearLayout) layoutInflater.inflate(R.layout.script_setting_layout, null, false);
+        layout = (ScrollView) layoutInflater.inflate(R.layout.script_setting_layout, null, false);
 
         init();
         initListener();
@@ -40,14 +41,6 @@ public class SettingPopup extends PopupWindow {
         LinearLayout frame = new LinearLayout(context);
         CardView card = new CardView(context);
 
-        card.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dismiss();
-            }
-        });
-
-        card.setClickable(true);
         card.setUseCompatPadding(true);
         card.setContentPadding(MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8), MainActivity.dp(8));
         card.setCardElevation(12.f);
@@ -73,16 +66,17 @@ public class SettingPopup extends PopupWindow {
         ImageButton subtitleSet = (ImageButton) layout.findViewById(R.id.subtitle_set);
         final SwitchCompat enableSwitch = (SwitchCompat) layout.findViewById(R.id.script_enable);
         ImageButton deleteButton = (ImageButton) layout.findViewById(R.id.delete_project);
+        ImageButton refreshButton = (ImageButton) layout.findViewById(R.id.refresh_project);
 
         titleEdit.setText(project.title);
         subtitleEdit.setText(project.subtitle);
-        enableSwitch.setChecked(!project.disabled);
+        enableSwitch.setChecked(project.enable);
 
         titleSet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
-                    FileManager.changeData(project.title, "title", titleEdit.getText().toString());
+                    FileManager.saveData(project, "title", titleEdit.getText().toString());
 
                     dismiss();
                     activity.reload();
@@ -96,7 +90,7 @@ public class SettingPopup extends PopupWindow {
             @Override
             public void onClick(View view) {
                 try {
-                    FileManager.changeData(project.title, "subtitle", subtitleEdit.getText().toString());
+                    FileManager.saveData(project, "subtitle", subtitleEdit.getText().toString());
 
                     dismiss();
                     activity.reload();
@@ -109,7 +103,7 @@ public class SettingPopup extends PopupWindow {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 try {
-                    FileManager.changeData(project.title, "disabled", (!enableSwitch.isChecked()) + "");
+                    FileManager.saveData(project, "disabled", (!enableSwitch.isChecked()) + "");
 
                     dismiss();
                     activity.reload();
@@ -128,7 +122,7 @@ public class SettingPopup extends PopupWindow {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         try {
-                            FileManager.delete(project.title);
+                            FileManager.delete(project);
 
                             activity.reload();
                         } catch (Exception e) {
@@ -145,6 +139,13 @@ public class SettingPopup extends PopupWindow {
                 dialog.show();
 
                 dismiss();
+            }
+        });
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+                activity.reloadProject(project);
             }
         });
     }

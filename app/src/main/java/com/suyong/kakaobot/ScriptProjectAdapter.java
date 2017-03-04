@@ -40,7 +40,7 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
         final Holder holder = (Holder) originHolder;
         final Type.Project project = list.get(position);
 
-        switch (project.icon) {
+        switch (project.type) {
             case JS:
                 holder.icon.setImageResource(R.drawable.image_javascript);
                 break;
@@ -102,7 +102,7 @@ public class ScriptProjectAdapter extends RecyclerView.Adapter {
                 }
             });
         }
-        if(project.disabled) {
+        if(!project.enable) {
             disableAll((ViewGroup) originHolder.itemView);
         } else {
             enableAll((ViewGroup) originHolder.itemView);

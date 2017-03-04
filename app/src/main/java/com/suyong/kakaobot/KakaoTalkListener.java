@@ -63,8 +63,16 @@ public class KakaoTalkListener extends NotificationListenerService {
                     sessions.add(session);
 
                     for(JSScriptEngine engine : jsEngines) {
-                        engine.invokeFunction("talkReceivedHook", new Object[]{message.room, message.message, message.sender, !message.room.equals(message.sender)});
-                        Log.d("KakaoBot/Listener", "JS Received! " + message.message);
+                        try {
+                            engine.invoke("talkReceivedHook", message.room, message.message, message.sender, !message.room.equals(message.sender));
+                        } catch(final Exception e) {
+                            MainActivity.UIThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, e.toString().split("SCRIPTSPLITTAG")[1], Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                     }
                     for(PythonScriptEngine engine : pythonEngines) {
                         /*engine.invokeFunction("talkReceivedHook", new PyObject[]{
@@ -110,6 +118,12 @@ public class KakaoTalkListener extends NotificationListenerService {
     public static ArrayList<Session> getSessions() {
         return sessions;
     }
+    public static JSScriptEngine[] getJsEngines() {
+        return jsEngines.toArray(new JSScriptEngine[0]);
+    }
+    public static PythonScriptEngine[] getPythonEngines() {
+        return pythonEngines.toArray(new PythonScriptEngine[0]);
+    }
 
     private Type.Message parsingMessage(String title, Object index) {
         Type.Message result = new Type.Message();
@@ -128,7 +142,7 @@ public class KakaoTalkListener extends NotificationListenerService {
     }
 
     public static void addJsEngine(JSScriptEngine engine) throws Exception {
-        engine.execute();
+        engine.run();
 
         jsEngines.add(engine);
     }
@@ -141,6 +155,7 @@ public class KakaoTalkListener extends NotificationListenerService {
     public static void clearEngine() {
         jsEngines.clear();
         pythonEngines.clear();
+        Log.d("KakaoBot/Listener", jsEngines.size() + " " + pythonEngines.size());
     }
 
     public class Session {

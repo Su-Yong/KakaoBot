@@ -2,6 +2,7 @@ package com.suyong.kakaobot;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.suyong.kakaobot.script.JSScriptEngine;
+import com.suyong.kakaobot.script.JSUtil;
 import com.suyong.kakaobot.script.PythonScriptEngine;
 
 import java.io.BufferedInputStream;
@@ -49,16 +51,15 @@ import java.util.ArrayList;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.M;
-import static com.suyong.kakaobot.FileManager.getProjectList;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_READ = 0;
     private static final int PERMISSION_WRITE = 1;
     private static final int PERMISSION_INTERNET = 2;
     private static final int PERMISSION_ALL = 3;
+    private static final int PERMISSION_OVERLAY = 4;
 
-    private static Context context;
+    private static Activity context;
 
     private LinearLayout fabContainer;
     private FloatingActionButton fabAdd;
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         context = this;
+        JSUtil.setContext(this);
+        FileManager.init();
 
         fabContainer = (LinearLayout) findViewById(R.id.fab_container);
 
@@ -111,6 +114,9 @@ public class MainActivity extends AppCompatActivity {
             if (!hasPermissions(permissions)) {
                 requestPermissions(permissions, PERMISSION_ALL);
             }
+            if (!Settings.canDrawOverlays(this)) {
+                startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION), PERMISSION_OVERLAY);
+            }
         }
 
         try {
@@ -135,6 +141,27 @@ public class MainActivity extends AppCompatActivity {
         initRecyclerView();
     }
 
+    public void reloadProject(Type.Project project) {
+        for(int i = 0; i < projectList.size(); i++) {
+            if(projectList.get(i).equals(project)) {
+                projectList.remove(i);
+                projectList.add(i, project);
+            }
+            i++;
+        }
+
+        initRecyclerView();
+        Snackbar.make(fabContainer, getString(R.string.reloaded), Snackbar.LENGTH_SHORT).show();
+    }
+
+    public static Context getContext() {
+        return context;
+    }
+
+    public static void UIThread(Runnable runnable) {
+        context.runOnUiThread(runnable);
+    }
+
     private void prepare() {
         PackageInfo[] apps = this.getPackageManager().getInstalledPackages(0).toArray(new PackageInfo[0]);
 
@@ -151,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String notifiPermission = Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners");
-        if(!notifiPermission.contains("com.suyong.kakaobot")) {
+        if((notifiPermission != null && !notifiPermission.contains("com.suyong.kakaobot")) || notifiPermission == null) {
             startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
             Toast.makeText(this, getString(R.string.need_permission), Toast.LENGTH_SHORT).show();
         }
@@ -170,17 +197,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initEngines() {
-        projectList = getProjectList();
+        projectList = FileManager.getProjectList();
         KakaoTalkListener.clearEngine();
 
         int i = 0;
         for (Type.Project project : projectList) {
-            if (!project.disabled) {
-                switch (project.icon) {
+            if (!project.enable) {
+                switch (project.type) {
                     case JS:
                         JSScriptEngine jsScriptEngine = new JSScriptEngine();
                         try {
-                            jsScriptEngine.setScriptSource(FileManager.getScriptIndex(Type.IconType.JS, project.title));
+                            jsScriptEngine.setScript(FileManager.getProjectScript(project));
+                            jsScriptEngine.setName((String) FileManager.readData(project, "title"));
                             KakaoTalkListener.addJsEngine(jsScriptEngine);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
@@ -225,18 +253,29 @@ public class MainActivity extends AppCompatActivity {
         dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Type.IconType type = Type.IconType.JS;
+                Type.ProjectType type = Type.ProjectType.JS;
 
                 switch(radioGroup.getCheckedRadioButtonId()) {
                     case R.id.type_js:
-                        type = Type.IconType.JS;
+                        type = Type.ProjectType.JS;
                         break;
                     case R.id.type_python:
-                        type = Type.IconType.PYTHON;
+                        type = Type.ProjectType.PYTHON;
                         break;
                 }
                 try {
-                    FileManager.createProject(titleEdit.getText().toString(), subtitleEdit.getText().toString(), type);
+                    if(titleEdit.getText().toString().trim().equals("")) {
+                        showProjectDialog();
+                        Toast.makeText(context, getString(R.string.no_space_title), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Type.Project project = new Type.Project();
+                    project.title = titleEdit.getText().toString();
+                    project.subtitle = subtitleEdit.getText().toString();
+                    project.type = type;
+                    project.enable = true;
+
+                    FileManager.createProject(project);
                     initEngines();
                     initRecyclerView();
 
@@ -289,7 +328,30 @@ public class MainActivity extends AppCompatActivity {
                     // TODO
                 }
                 break;
+            case PERMISSION_OVERLAY:
+                if (Settings.canDrawOverlays(this)) {
+                    // TODO
+                } else {
+                    // TODO
+                }
+                break;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem feedback = menu.findItem(R.id.action_feedback);
+        feedback.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:simssy2205@gmail.com"));
+                startActivity(intent);
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     public static int dp(float dips) {

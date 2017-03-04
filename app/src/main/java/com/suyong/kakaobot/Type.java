@@ -8,20 +8,21 @@ public class Type {
     }
 
     public static class Project {
-        public IconType icon;
+        public ProjectType type;
         public String title;
         public String subtitle;
-        public String isError = null;
-        public boolean disabled;
-        public String path;
+        public boolean enable;
+
+        @Deprecated
+        public String isError;
     }
 
-    public enum IconType {
+    public enum ProjectType {
         JS("js"),
         PYTHON("py");
 
         private String type;
-        IconType(String type) {
+        ProjectType(String type) {
             this.type = type;
         }
 
